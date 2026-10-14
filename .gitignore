@@ -1,0 +1,25 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Secrets - never upload
+.env
+
+# Node
+node_modules/
+dist/
+
+# Uploaded files and exports
+backend/storage/uploads/*
+backend/storage/exports/*
+!backend/storage/uploads/.gitkeep
+!backend/storage/exports/.gitkeep
+
+# Editor / OS
+.vscode/
+.DS_Store
+Thumbs.db
+*.log

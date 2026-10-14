@@ -1,0 +1,5592 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Dynamic Form Builder API",
+    "description": "\nBuild dynamic forms without code changes: drag-and-drop field ordering, 9 field types,\nrequired/type validation, conditional visibility, public & authenticated submissions,\npermission-based response editing with full history, search & filters, analytics,\nExcel/PDF exports (Celery) and activity logs.\n\n**Auth:** click **Authorize** and log in with your email as `username`.\nDefault admin: `admin@formbuilder.com` / `Admin@123` (change it!).\n",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Register",
+        "description": "Self-registration. New accounts always get the **User** role.",
+        "operationId": "register_api_v1_auth_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Login",
+        "description": "OAuth2 password flow (form fields `username` = email, `password`). Works with Swagger's **Authorize** button.",
+        "operationId": "login_api_v1_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_login_api_v1_auth_login_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Refresh",
+        "operationId": "refresh_api_v1_auth_refresh_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Logout",
+        "description": "JWTs are stateless: the client discards its tokens. This endpoint records the event.",
+        "operationId": "logout_api_v1_auth_logout_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Me",
+        "operationId": "me_api_v1_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Update Me",
+        "operationId": "update_me_api_v1_auth_me_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserProfileUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/me/change-password": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Change Password",
+        "operationId": "change_password_api_v1_auth_me_change_password_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/roles": {
+      "get": {
+        "tags": [
+          "Users (Admin)"
+        ],
+        "summary": "List Roles",
+        "operationId": "list_roles_api_v1_users_roles_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RoleOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Roles Api V1 Users Roles Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users": {
+      "get": {
+        "tags": [
+          "Users (Admin)"
+        ],
+        "summary": "List Users",
+        "operationId": "list_users_api_v1_users_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Name or email",
+              "title": "Search"
+            },
+            "description": "Name or email"
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/RoleName"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Role"
+            }
+          },
+          {
+            "name": "is_active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Is Active"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_UserOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{user_id}": {
+      "get": {
+        "tags": [
+          "Users (Admin)"
+        ],
+        "summary": "Get User",
+        "operationId": "get_user_api_v1_users__user_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Users (Admin)"
+        ],
+        "summary": "Update User",
+        "description": "Change a user's name, role or active status.",
+        "operationId": "update_user_api_v1_users__user_id__patch",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUserUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Users (Admin)"
+        ],
+        "summary": "Delete User",
+        "description": "Permanently deletes the user **and their forms**. Prefer deactivating (`is_active=false`).",
+        "operationId": "delete_user_api_v1_users__user_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/forms": {
+      "get": {
+        "tags": [
+          "Forms"
+        ],
+        "summary": "List Forms",
+        "description": "Users see their own forms; admins see all forms.",
+        "operationId": "list_forms_api_v1_forms_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search title / description",
+              "title": "Search"
+            },
+            "description": "Search title / description"
+          },
+          {
+            "name": "is_active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Is Active"
+            }
+          },
+          {
+            "name": "is_public",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Is Public"
+            }
+          },
+          {
+            "name": "owner_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Admin only: filter by owner",
+              "title": "Owner Id"
+            },
+            "description": "Admin only: filter by owner"
+          },
+          {
+            "name": "mine",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Admin only: show only my forms",
+              "default": false,
+              "title": "Mine"
+            },
+            "description": "Admin only: show only my forms"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_FormSummary_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Forms"
+        ],
+        "summary": "Create Form",
+        "description": "Create a form, optionally with its fields in the same request.",
+        "operationId": "create_form_api_v1_forms_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FormCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/forms/{form_id}": {
+      "get": {
+        "tags": [
+          "Forms"
+        ],
+        "summary": "Get Form",
+        "operationId": "get_form_api_v1_forms__form_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "form_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Form Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Forms"
+        ],
+        "summary": "Update Form",
+        "description": "Update form settings (title, description, visibility, edit permissions...).",
+        "operationId": "update_form_api_v1_forms__form_id__put",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "form_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Form Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FormUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Forms"
+        ],
+        "summary": "Delete Form",
+        "description": "Delete a form together with all its fields and responses.",
+        "operationId": "delete_form_api_v1_forms__form_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "form_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Form Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/forms/{form_id}/status": {
+      "patch": {
+        "tags": [
+          "Forms"
+        ],
+        "summary": "Set Form Status",
+        "description": "Enable / disable a form. Disabled forms reject new submissions and submitter edits.",
+        "operationId": "set_form_status_api_v1_forms__form_id__status_patch",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "form_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Form Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FormStatusUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormSummary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/forms/{form_id}/duplicate": {
+      "post": {
+        "tags": [
+          "Forms"
+        ],
+        "summary": "Duplicate Form",
+        "description": "Copy a form's settings and fields (not responses). The copy starts disabled.",
+        "operationId": "duplicate_form_api_v1_forms__form_id__duplicate_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "form_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Form Id"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/forms/{form_id}/activity": {
+      "get": {
+        "tags": [
+          "Forms"
+        ],
+        "summary": "Form Activity",
+        "description": "Activity on this form and its responses.",
+        "operationId": "form_activity_api_v1_forms__form_id__activity_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "form_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Form Id"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ActivityLogOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/forms/{form_id}/fields": {
+      "put": {
+        "tags": [
+          "Forms"
+        ],
+        "summary": "Save All Fields",
+        "description": "**Drag-and-drop builder save.** Send the complete field list in display order.\nItems with `id` are updated, items without `id` are created, missing fields are deleted.",
+        "operationId": "save_all_fields_api_v1_forms__form_id__fields_put",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "form_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Form Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FieldsBulkSave"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Forms"
+        ],
+        "summary": "Add Field",
+        "description": "Add one field. `order_index` sets its position (appended when omitted).",
+        "operationId": "add_field_api_v1_forms__form_id__fields_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "form_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Form Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FieldCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/forms/{form_id}/fields/{field_id}": {
+      "patch": {
+        "tags": [
+          "Forms"
+        ],
+        "summary": "Update Field",
+        "operationId": "update_field_api_v1_forms__form_id__fields__field_id__patch",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "form_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Form Id"
+            }
+          },
+          {
+            "name": "field_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Field Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FieldUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Forms"
+        ],
+        "summary": "Delete Field",
+        "description": "Delete a field. Existing answers are kept in responses (label snapshot).",
+        "operationId": "delete_field_api_v1_forms__form_id__fields__field_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "form_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Form Id"
+            }
+          },
+          {
+            "name": "field_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Field Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/forms/{form_id}/fields/reorder": {
+      "put": {
+        "tags": [
+          "Forms"
+        ],
+        "summary": "Reorder Fields",
+        "description": "Reorder fields. `field_ids` must contain every field id of the form exactly once.",
+        "operationId": "reorder_fields_api_v1_forms__form_id__fields_reorder_put",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "form_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Form Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FieldReorderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/forms/{slug}": {
+      "get": {
+        "tags": [
+          "Form Submission (Public & Authenticated)"
+        ],
+        "summary": "Get Public Form",
+        "description": "Form definition for the renderer (fields, options, validation config, visibility rules).",
+        "operationId": "get_public_form_api_v1_public_forms__slug__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicFormOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/forms/{slug}/upload": {
+      "post": {
+        "tags": [
+          "Form Submission (Public & Authenticated)"
+        ],
+        "summary": "Upload File",
+        "description": "Step 1 for file fields: upload the file, then send the returned `file_path`\nas that field's answer in `/submit`.",
+        "operationId": "upload_file_api_v1_public_forms__slug__upload_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          },
+          {
+            "name": "field_key",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Key of the file field",
+              "title": "Field Key"
+            },
+            "description": "Key of the file field"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_file_api_v1_public_forms__slug__upload_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileUploadOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/forms/{slug}/submit": {
+      "post": {
+        "tags": [
+          "Form Submission (Public & Authenticated)"
+        ],
+        "summary": "Submit Form",
+        "description": "Submit answers as `{field_key: value}`. Validation applies required rules,\ntype checks and conditional visibility (hidden fields are ignored).\nOn failure returns **422** with `errors: {field_key: message}`.",
+        "operationId": "submit_form_api_v1_public_forms__slug__submit_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmissionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmissionResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/forms/{form_id}/responses": {
+      "get": {
+        "tags": [
+          "Responses"
+        ],
+        "summary": "List Form Responses",
+        "description": "Responses of a form with **search, filters, sorting & pagination** (form owner / admin).",
+        "operationId": "list_form_responses_api_v1_forms__form_id__responses_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "form_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Form Id"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Size"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search answers, submitter name/email or response id",
+              "title": "Search"
+            },
+            "description": "Search answers, submitter name/email or response id"
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "YYYY-MM-DD",
+              "title": "Date From"
+            },
+            "description": "YYYY-MM-DD"
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "YYYY-MM-DD (inclusive)",
+              "title": "Date To"
+            },
+            "description": "YYYY-MM-DD (inclusive)"
+          },
+          {
+            "name": "submitted_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Submitter user id",
+              "title": "Submitted By"
+            },
+            "description": "Submitter user id"
+          },
+          {
+            "name": "submitter_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "all",
+                "authenticated",
+                "anonymous"
+              ],
+              "type": "string",
+              "default": "all",
+              "title": "Submitter Type"
+            }
+          },
+          {
+            "name": "field_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by a specific field...",
+              "title": "Field Key"
+            },
+            "description": "Filter by a specific field..."
+          },
+          {
+            "name": "field_value",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "...containing this value",
+              "title": "Field Value"
+            },
+            "description": "...containing this value"
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "created_at",
+                "updated_at",
+                "id"
+              ],
+              "type": "string",
+              "default": "created_at",
+              "title": "Sort By"
+            }
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string",
+              "default": "desc",
+              "title": "Sort Order"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ResponseOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/responses/mine": {
+      "get": {
+        "tags": [
+          "Responses"
+        ],
+        "summary": "My Responses",
+        "description": "Responses submitted by the logged-in user (across all forms).",
+        "operationId": "my_responses_api_v1_responses_mine_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ResponseOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/responses/{response_id}": {
+      "get": {
+        "tags": [
+          "Responses"
+        ],
+        "summary": "Get Response",
+        "operationId": "get_response_api_v1_responses__response_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "response_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Response Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Responses"
+        ],
+        "summary": "Update Response",
+        "description": "Edit a response (send the **complete** answer set; it is re-validated).\n\nAllowed for admins and the form owner, or for the original submitter when the\nform has `allow_response_edit = true` and is active. Every change is stored in\nthe response history.",
+        "operationId": "update_response_api_v1_responses__response_id__put",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "response_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Response Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResponseUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Responses"
+        ],
+        "summary": "Delete Response",
+        "operationId": "delete_response_api_v1_responses__response_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "response_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Response Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/responses/{response_id}/history": {
+      "get": {
+        "tags": [
+          "Responses"
+        ],
+        "summary": "Response History",
+        "description": "Full change history: the original submission followed by every edit (old -> new values).",
+        "operationId": "response_history_api_v1_responses__response_id__history_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "response_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Response Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ResponseHistoryEntry"
+                  },
+                  "title": "Response Response History Api V1 Responses  Response Id  History Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/responses/{response_id}/files/{detail_id}": {
+      "get": {
+        "tags": [
+          "Responses"
+        ],
+        "summary": "Download Response File",
+        "description": "Download a file uploaded in a response.",
+        "operationId": "download_response_file_api_v1_responses__response_id__files__detail_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "response_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Response Id"
+            }
+          },
+          {
+            "name": "detail_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Detail Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/dashboard": {
+      "get": {
+        "tags": [
+          "Dashboard & Analytics"
+        ],
+        "summary": "Dashboard",
+        "description": "Dashboard KPIs, submission trend, top forms and recent responses.\nAdmins see platform-wide numbers (plus user counts); users see their own forms.",
+        "operationId": "dashboard_api_v1_analytics_dashboard_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 365,
+              "minimum": 7,
+              "description": "Trend window",
+              "default": 30,
+              "title": "Days"
+            },
+            "description": "Trend window"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardStats"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/forms/{form_id}": {
+      "get": {
+        "tags": [
+          "Dashboard & Analytics"
+        ],
+        "summary": "Form Analytics",
+        "description": "Form-wise analytics: totals, trend, and per-field stats (option distribution,\nrating averages, number min/max/avg, response rate).",
+        "operationId": "form_analytics_api_v1_analytics_forms__form_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "form_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Form Id"
+            }
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 365,
+              "minimum": 7,
+              "default": 30,
+              "title": "Days"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormAnalytics"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/exports/forms/{form_id}": {
+      "post": {
+        "tags": [
+          "Exports (Excel / PDF)"
+        ],
+        "summary": "Request Export",
+        "description": "**Async export via Celery.** Accepts the same filters as the responses list.\nPoll `GET /exports/tasks/{task_id}` and download when status is `SUCCESS`.",
+        "operationId": "request_export_api_v1_exports_forms__form_id__post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "form_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Form Id"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ExportFormat",
+              "default": "excel"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search answers, submitter name/email or response id",
+              "title": "Search"
+            },
+            "description": "Search answers, submitter name/email or response id"
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "YYYY-MM-DD",
+              "title": "Date From"
+            },
+            "description": "YYYY-MM-DD"
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "YYYY-MM-DD (inclusive)",
+              "title": "Date To"
+            },
+            "description": "YYYY-MM-DD (inclusive)"
+          },
+          {
+            "name": "submitted_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Submitter user id",
+              "title": "Submitted By"
+            },
+            "description": "Submitter user id"
+          },
+          {
+            "name": "submitter_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "all",
+                "authenticated",
+                "anonymous"
+              ],
+              "type": "string",
+              "default": "all",
+              "title": "Submitter Type"
+            }
+          },
+          {
+            "name": "field_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by a specific field...",
+              "title": "Field Key"
+            },
+            "description": "Filter by a specific field..."
+          },
+          {
+            "name": "field_value",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "...containing this value",
+              "title": "Field Value"
+            },
+            "description": "...containing this value"
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "created_at",
+                "updated_at",
+                "id"
+              ],
+              "type": "string",
+              "default": "created_at",
+              "title": "Sort By"
+            }
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string",
+              "default": "desc",
+              "title": "Sort Order"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportTaskOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/exports/tasks/{task_id}": {
+      "get": {
+        "tags": [
+          "Exports (Excel / PDF)"
+        ],
+        "summary": "Export Status",
+        "description": "Status: PENDING | STARTED | RETRY | SUCCESS | FAILURE.",
+        "operationId": "export_status_api_v1_exports_tasks__task_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportTaskOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/exports/tasks/{task_id}/download": {
+      "get": {
+        "tags": [
+          "Exports (Excel / PDF)"
+        ],
+        "summary": "Download Export",
+        "operationId": "download_export_api_v1_exports_tasks__task_id__download_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/exports/forms/{form_id}/download": {
+      "get": {
+        "tags": [
+          "Exports (Excel / PDF)"
+        ],
+        "summary": "Download Export Now",
+        "description": "**Synchronous export** - generates and streams the file immediately (fine for small/medium forms).",
+        "operationId": "download_export_now_api_v1_exports_forms__form_id__download_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "form_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Form Id"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ExportFormat",
+              "default": "excel"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search answers, submitter name/email or response id",
+              "title": "Search"
+            },
+            "description": "Search answers, submitter name/email or response id"
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "YYYY-MM-DD",
+              "title": "Date From"
+            },
+            "description": "YYYY-MM-DD"
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "YYYY-MM-DD (inclusive)",
+              "title": "Date To"
+            },
+            "description": "YYYY-MM-DD (inclusive)"
+          },
+          {
+            "name": "submitted_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Submitter user id",
+              "title": "Submitted By"
+            },
+            "description": "Submitter user id"
+          },
+          {
+            "name": "submitter_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "all",
+                "authenticated",
+                "anonymous"
+              ],
+              "type": "string",
+              "default": "all",
+              "title": "Submitter Type"
+            }
+          },
+          {
+            "name": "field_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by a specific field...",
+              "title": "Field Key"
+            },
+            "description": "Filter by a specific field..."
+          },
+          {
+            "name": "field_value",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "...containing this value",
+              "title": "Field Value"
+            },
+            "description": "...containing this value"
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "created_at",
+                "updated_at",
+                "id"
+              ],
+              "type": "string",
+              "default": "created_at",
+              "title": "Sort By"
+            }
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string",
+              "default": "desc",
+              "title": "Sort Order"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/activity-logs": {
+      "get": {
+        "tags": [
+          "Activity Logs"
+        ],
+        "summary": "List Activity Logs",
+        "description": "Admins see all activity; regular users see their own actions.",
+        "operationId": "list_activity_logs_api_v1_activity_logs_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Admin only",
+              "title": "User Id"
+            },
+            "description": "Admin only"
+          },
+          {
+            "name": "action",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Action"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Action"
+            }
+          },
+          {
+            "name": "entity_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/EntityType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Entity Type"
+            }
+          },
+          {
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Entity Id"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search in description",
+              "title": "Search"
+            },
+            "description": "Search in description"
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date From"
+            }
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date To"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ActivityLogOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/activity-logs/actions": {
+      "get": {
+        "tags": [
+          "Activity Logs"
+        ],
+        "summary": "List Actions",
+        "description": "All action codes (for the filter dropdown).",
+        "operationId": "list_actions_api_v1_activity_logs_actions_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array",
+                  "title": "Response List Actions Api V1 Activity Logs Actions Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Action": {
+        "type": "string",
+        "enum": [
+          "USER_REGISTERED",
+          "USER_LOGIN",
+          "USER_LOGOUT",
+          "PROFILE_UPDATED",
+          "PASSWORD_CHANGED",
+          "USER_UPDATED",
+          "USER_DELETED",
+          "FORM_CREATED",
+          "FORM_UPDATED",
+          "FORM_DELETED",
+          "FORM_ENABLED",
+          "FORM_DISABLED",
+          "FORM_DUPLICATED",
+          "FORM_FIELDS_UPDATED",
+          "RESPONSE_SUBMITTED",
+          "RESPONSE_UPDATED",
+          "RESPONSE_DELETED",
+          "EXPORT_REQUESTED",
+          "EXPORT_DOWNLOADED"
+        ],
+        "title": "Action"
+      },
+      "ActivityLogOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          },
+          "user_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Name"
+          },
+          "user_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Email"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "entity_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity Type"
+          },
+          "entity_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity Id"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "old_values": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Old Values"
+          },
+          "new_values": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "New Values"
+          },
+          "ip_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ip Address"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "user_id",
+          "user_name",
+          "user_email",
+          "action",
+          "entity_type",
+          "entity_id",
+          "description",
+          "old_values",
+          "new_values",
+          "ip_address",
+          "created_at"
+        ],
+        "title": "ActivityLogOut"
+      },
+      "AdminUserUpdate": {
+        "properties": {
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 150,
+                "minLength": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RoleName"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Active"
+          }
+        },
+        "type": "object",
+        "title": "AdminUserUpdate"
+      },
+      "Body_login_api_v1_auth_login_post": {
+        "properties": {
+          "grant_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^password$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grant Type"
+          },
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "title": "Password"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope",
+            "default": ""
+          },
+          "client_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Id"
+          },
+          "client_secret": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "format": "password",
+            "title": "Client Secret"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "Body_login_api_v1_auth_login_post"
+      },
+      "Body_upload_file_api_v1_public_forms__slug__upload_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_file_api_v1_public_forms__slug__upload_post"
+      },
+      "ChangePasswordRequest": {
+        "properties": {
+          "current_password": {
+            "type": "string",
+            "title": "Current Password"
+          },
+          "new_password": {
+            "type": "string",
+            "maxLength": 72,
+            "minLength": 8,
+            "title": "New Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "current_password",
+          "new_password"
+        ],
+        "title": "ChangePasswordRequest"
+      },
+      "Condition": {
+        "properties": {
+          "field_key": {
+            "type": "string",
+            "title": "Field Key",
+            "description": "Key of the field this condition depends on"
+          },
+          "operator": {
+            "$ref": "#/components/schemas/ConditionOperator"
+          },
+          "value": {
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field_key",
+          "operator"
+        ],
+        "title": "Condition"
+      },
+      "ConditionOperator": {
+        "type": "string",
+        "enum": [
+          "equals",
+          "not_equals",
+          "contains",
+          "not_contains",
+          "in",
+          "not_in",
+          "greater_than",
+          "less_than",
+          "greater_or_equal",
+          "less_or_equal",
+          "is_empty",
+          "is_not_empty"
+        ],
+        "title": "ConditionOperator"
+      },
+      "DashboardStats": {
+        "properties": {
+          "total_forms": {
+            "type": "integer",
+            "title": "Total Forms"
+          },
+          "active_forms": {
+            "type": "integer",
+            "title": "Active Forms"
+          },
+          "inactive_forms": {
+            "type": "integer",
+            "title": "Inactive Forms"
+          },
+          "public_forms": {
+            "type": "integer",
+            "title": "Public Forms"
+          },
+          "total_responses": {
+            "type": "integer",
+            "title": "Total Responses"
+          },
+          "responses_today": {
+            "type": "integer",
+            "title": "Responses Today"
+          },
+          "responses_last_7_days": {
+            "type": "integer",
+            "title": "Responses Last 7 Days"
+          },
+          "responses_last_30_days": {
+            "type": "integer",
+            "title": "Responses Last 30 Days"
+          },
+          "total_users": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Users"
+          },
+          "active_users": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Users"
+          },
+          "submissions_trend": {
+            "items": {
+              "$ref": "#/components/schemas/TrendPoint"
+            },
+            "type": "array",
+            "title": "Submissions Trend"
+          },
+          "top_forms": {
+            "items": {
+              "$ref": "#/components/schemas/TopForm"
+            },
+            "type": "array",
+            "title": "Top Forms"
+          },
+          "recent_responses": {
+            "items": {
+              "$ref": "#/components/schemas/RecentResponse"
+            },
+            "type": "array",
+            "title": "Recent Responses"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_forms",
+          "active_forms",
+          "inactive_forms",
+          "public_forms",
+          "total_responses",
+          "responses_today",
+          "responses_last_7_days",
+          "responses_last_30_days",
+          "submissions_trend",
+          "top_forms",
+          "recent_responses"
+        ],
+        "title": "DashboardStats"
+      },
+      "EntityType": {
+        "type": "string",
+        "enum": [
+          "user",
+          "form",
+          "form_response",
+          "export"
+        ],
+        "title": "EntityType"
+      },
+      "ExportFormat": {
+        "type": "string",
+        "enum": [
+          "excel",
+          "pdf"
+        ],
+        "title": "ExportFormat"
+      },
+      "ExportTaskOut": {
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "format": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Format"
+          },
+          "file_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Name"
+          },
+          "download_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Download Url"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "task_id",
+          "status"
+        ],
+        "title": "ExportTaskOut"
+      },
+      "FieldAnalytics": {
+        "properties": {
+          "field_id": {
+            "type": "integer",
+            "title": "Field Id"
+          },
+          "field_key": {
+            "type": "string",
+            "title": "Field Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "field_type": {
+            "type": "string",
+            "title": "Field Type"
+          },
+          "answered_count": {
+            "type": "integer",
+            "title": "Answered Count"
+          },
+          "response_rate": {
+            "type": "number",
+            "title": "Response Rate"
+          },
+          "option_counts": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/OptionCount"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Option Counts"
+          },
+          "average": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average"
+          },
+          "minimum": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Minimum"
+          },
+          "maximum": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Maximum"
+          },
+          "earliest": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Earliest"
+          },
+          "latest": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field_id",
+          "field_key",
+          "label",
+          "field_type",
+          "answered_count",
+          "response_rate"
+        ],
+        "title": "FieldAnalytics"
+      },
+      "FieldCreate": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "field_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100,
+                "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field Key",
+            "description": "Unique key inside the form. Auto-generated from the label when omitted."
+          },
+          "field_type": {
+            "$ref": "#/components/schemas/FieldType"
+          },
+          "placeholder": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placeholder"
+          },
+          "help_text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Help Text"
+          },
+          "is_required": {
+            "type": "boolean",
+            "title": "Is Required",
+            "default": false
+          },
+          "order_index": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Index"
+          },
+          "config": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Config",
+            "description": "text: min_length, max_length, pattern, pattern_message | number: min, max, integer_only | date: min_date, max_date | checkbox: min_selected, max_selected | rating: max_rating (1-10) | file: allowed_extensions, max_size_mb"
+          },
+          "visibility_rules": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VisibilityRules"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/FieldOptionIn"
+            },
+            "type": "array",
+            "title": "Options"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "field_type"
+        ],
+        "title": "FieldCreate"
+      },
+      "FieldOptionIn": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value",
+            "description": "Defaults to the label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label"
+        ],
+        "title": "FieldOptionIn"
+      },
+      "FieldOptionOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          },
+          "order_index": {
+            "type": "integer",
+            "title": "Order Index"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "value",
+          "order_index"
+        ],
+        "title": "FieldOptionOut"
+      },
+      "FieldOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "field_key": {
+            "type": "string",
+            "title": "Field Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "field_type": {
+            "type": "string",
+            "title": "Field Type"
+          },
+          "placeholder": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placeholder"
+          },
+          "help_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Help Text"
+          },
+          "is_required": {
+            "type": "boolean",
+            "title": "Is Required"
+          },
+          "order_index": {
+            "type": "integer",
+            "title": "Order Index"
+          },
+          "config": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Config"
+          },
+          "visibility_rules": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Visibility Rules"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/FieldOptionOut"
+            },
+            "type": "array",
+            "title": "Options"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "field_key",
+          "label",
+          "field_type",
+          "placeholder",
+          "help_text",
+          "is_required",
+          "order_index",
+          "config",
+          "visibility_rules",
+          "options"
+        ],
+        "title": "FieldOut"
+      },
+      "FieldReorderRequest": {
+        "properties": {
+          "field_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Field Ids",
+            "description": "All field ids of the form in the new order"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field_ids"
+        ],
+        "title": "FieldReorderRequest"
+      },
+      "FieldType": {
+        "type": "string",
+        "enum": [
+          "text",
+          "number",
+          "email",
+          "date",
+          "dropdown",
+          "checkbox",
+          "radio",
+          "file",
+          "rating"
+        ],
+        "title": "FieldType"
+      },
+      "FieldUpdate": {
+        "properties": {
+          "label": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "field_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100,
+                "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field Key"
+          },
+          "field_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FieldType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "placeholder": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placeholder"
+          },
+          "help_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Help Text"
+          },
+          "is_required": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Required"
+          },
+          "order_index": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Index"
+          },
+          "config": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Config"
+          },
+          "visibility_rules": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VisibilityRules"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "options": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FieldOptionIn"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Options"
+          }
+        },
+        "type": "object",
+        "title": "FieldUpdate"
+      },
+      "FieldUpsert": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "field_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100,
+                "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field Key",
+            "description": "Unique key inside the form. Auto-generated from the label when omitted."
+          },
+          "field_type": {
+            "$ref": "#/components/schemas/FieldType"
+          },
+          "placeholder": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placeholder"
+          },
+          "help_text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Help Text"
+          },
+          "is_required": {
+            "type": "boolean",
+            "title": "Is Required",
+            "default": false
+          },
+          "order_index": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Index"
+          },
+          "config": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Config",
+            "description": "text: min_length, max_length, pattern, pattern_message | number: min, max, integer_only | date: min_date, max_date | checkbox: min_selected, max_selected | rating: max_rating (1-10) | file: allowed_extensions, max_size_mb"
+          },
+          "visibility_rules": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VisibilityRules"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/FieldOptionIn"
+            },
+            "type": "array",
+            "title": "Options"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id",
+            "description": "Existing field id; omit to create a new field"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "field_type"
+        ],
+        "title": "FieldUpsert"
+      },
+      "FieldsBulkSave": {
+        "properties": {
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/FieldUpsert"
+            },
+            "type": "array",
+            "title": "Fields",
+            "description": "Complete field list. Array order = display order."
+          }
+        },
+        "type": "object",
+        "required": [
+          "fields"
+        ],
+        "title": "FieldsBulkSave"
+      },
+      "FileUploadOut": {
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "title": "File Path",
+            "description": "Use this value as the answer for the file field"
+          },
+          "file_name": {
+            "type": "string",
+            "title": "File Name"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "content_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_path",
+          "file_name",
+          "size_bytes",
+          "content_type"
+        ],
+        "title": "FileUploadOut"
+      },
+      "FormAnalytics": {
+        "properties": {
+          "form_id": {
+            "type": "integer",
+            "title": "Form Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "total_responses": {
+            "type": "integer",
+            "title": "Total Responses"
+          },
+          "authenticated_responses": {
+            "type": "integer",
+            "title": "Authenticated Responses"
+          },
+          "anonymous_responses": {
+            "type": "integer",
+            "title": "Anonymous Responses"
+          },
+          "edited_responses": {
+            "type": "integer",
+            "title": "Edited Responses"
+          },
+          "responses_today": {
+            "type": "integer",
+            "title": "Responses Today"
+          },
+          "responses_last_7_days": {
+            "type": "integer",
+            "title": "Responses Last 7 Days"
+          },
+          "first_response_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Response At"
+          },
+          "last_response_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Response At"
+          },
+          "average_per_day": {
+            "type": "number",
+            "title": "Average Per Day"
+          },
+          "submissions_trend": {
+            "items": {
+              "$ref": "#/components/schemas/TrendPoint"
+            },
+            "type": "array",
+            "title": "Submissions Trend"
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/FieldAnalytics"
+            },
+            "type": "array",
+            "title": "Fields"
+          }
+        },
+        "type": "object",
+        "required": [
+          "form_id",
+          "title",
+          "is_active",
+          "total_responses",
+          "authenticated_responses",
+          "anonymous_responses",
+          "edited_responses",
+          "responses_today",
+          "responses_last_7_days",
+          "first_response_at",
+          "last_response_at",
+          "average_per_day",
+          "submissions_trend",
+          "fields"
+        ],
+        "title": "FormAnalytics"
+      },
+      "FormCreate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "is_public": {
+            "type": "boolean",
+            "title": "Is Public",
+            "description": "Public forms accept anonymous submissions",
+            "default": false
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "default": true
+          },
+          "allow_response_edit": {
+            "type": "boolean",
+            "title": "Allow Response Edit",
+            "description": "Submitters may edit their own responses",
+            "default": false
+          },
+          "allow_multiple_submissions": {
+            "type": "boolean",
+            "title": "Allow Multiple Submissions",
+            "default": true
+          },
+          "submit_message": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submit Message"
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/FieldCreate"
+            },
+            "type": "array",
+            "title": "Fields"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "FormCreate"
+      },
+      "FormDetail": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "public_path": {
+            "type": "string",
+            "title": "Public Path"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "is_public": {
+            "type": "boolean",
+            "title": "Is Public"
+          },
+          "allow_response_edit": {
+            "type": "boolean",
+            "title": "Allow Response Edit"
+          },
+          "allow_multiple_submissions": {
+            "type": "boolean",
+            "title": "Allow Multiple Submissions"
+          },
+          "submit_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submit Message"
+          },
+          "owner_id": {
+            "type": "integer",
+            "title": "Owner Id"
+          },
+          "owner_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Name"
+          },
+          "field_count": {
+            "type": "integer",
+            "title": "Field Count"
+          },
+          "response_count": {
+            "type": "integer",
+            "title": "Response Count"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/FieldOut"
+            },
+            "type": "array",
+            "title": "Fields"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "slug",
+          "public_path",
+          "is_active",
+          "is_public",
+          "allow_response_edit",
+          "allow_multiple_submissions",
+          "submit_message",
+          "owner_id",
+          "owner_name",
+          "field_count",
+          "response_count",
+          "created_at",
+          "updated_at",
+          "fields"
+        ],
+        "title": "FormDetail"
+      },
+      "FormStatusUpdate": {
+        "properties": {
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          }
+        },
+        "type": "object",
+        "required": [
+          "is_active"
+        ],
+        "title": "FormStatusUpdate"
+      },
+      "FormSummary": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "public_path": {
+            "type": "string",
+            "title": "Public Path"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "is_public": {
+            "type": "boolean",
+            "title": "Is Public"
+          },
+          "allow_response_edit": {
+            "type": "boolean",
+            "title": "Allow Response Edit"
+          },
+          "allow_multiple_submissions": {
+            "type": "boolean",
+            "title": "Allow Multiple Submissions"
+          },
+          "submit_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submit Message"
+          },
+          "owner_id": {
+            "type": "integer",
+            "title": "Owner Id"
+          },
+          "owner_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Name"
+          },
+          "field_count": {
+            "type": "integer",
+            "title": "Field Count"
+          },
+          "response_count": {
+            "type": "integer",
+            "title": "Response Count"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "slug",
+          "public_path",
+          "is_active",
+          "is_public",
+          "allow_response_edit",
+          "allow_multiple_submissions",
+          "submit_message",
+          "owner_id",
+          "owner_name",
+          "field_count",
+          "response_count",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "FormSummary"
+      },
+      "FormUpdate": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "is_public": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Public"
+          },
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Active"
+          },
+          "allow_response_edit": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allow Response Edit"
+          },
+          "allow_multiple_submissions": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allow Multiple Submissions"
+          },
+          "submit_message": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submit Message"
+          }
+        },
+        "type": "object",
+        "title": "FormUpdate"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "MessageResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "MessageResponse"
+      },
+      "OptionCount": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "percentage": {
+            "type": "number",
+            "title": "Percentage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "value",
+          "count",
+          "percentage"
+        ],
+        "title": "OptionCount"
+      },
+      "Page_ActivityLogOut_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ActivityLogOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size"
+          },
+          "pages": {
+            "type": "integer",
+            "title": "Pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size",
+          "pages"
+        ],
+        "title": "Page[ActivityLogOut]"
+      },
+      "Page_FormSummary_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FormSummary"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size"
+          },
+          "pages": {
+            "type": "integer",
+            "title": "Pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size",
+          "pages"
+        ],
+        "title": "Page[FormSummary]"
+      },
+      "Page_ResponseOut_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ResponseOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size"
+          },
+          "pages": {
+            "type": "integer",
+            "title": "Pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size",
+          "pages"
+        ],
+        "title": "Page[ResponseOut]"
+      },
+      "Page_UserOut_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/UserOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size"
+          },
+          "pages": {
+            "type": "integer",
+            "title": "Pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size",
+          "pages"
+        ],
+        "title": "Page[UserOut]"
+      },
+      "PublicFormOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "is_public": {
+            "type": "boolean",
+            "title": "Is Public"
+          },
+          "allow_response_edit": {
+            "type": "boolean",
+            "title": "Allow Response Edit"
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/FieldOut"
+            },
+            "type": "array",
+            "title": "Fields"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "slug",
+          "title",
+          "description",
+          "is_public",
+          "allow_response_edit",
+          "fields"
+        ],
+        "title": "PublicFormOut",
+        "description": "What the form renderer needs (no owner / admin data)."
+      },
+      "RecentResponse": {
+        "properties": {
+          "response_id": {
+            "type": "integer",
+            "title": "Response Id"
+          },
+          "form_id": {
+            "type": "integer",
+            "title": "Form Id"
+          },
+          "form_title": {
+            "type": "string",
+            "title": "Form Title"
+          },
+          "submitter_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submitter Name"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "response_id",
+          "form_id",
+          "form_title",
+          "submitter_name",
+          "created_at"
+        ],
+        "title": "RecentResponse"
+      },
+      "RefreshRequest": {
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "title": "Refresh Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "refresh_token"
+        ],
+        "title": "RefreshRequest"
+      },
+      "RegisterRequest": {
+        "properties": {
+          "full_name": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 2,
+            "title": "Full Name",
+            "examples": [
+              "John Doe"
+            ]
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email",
+            "examples": [
+              "john@formbuilder.com"
+            ]
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 72,
+            "minLength": 8,
+            "title": "Password",
+            "examples": [
+              "Password@123"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "full_name",
+          "email",
+          "password"
+        ],
+        "title": "RegisterRequest"
+      },
+      "ResponseDetailOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "field_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field Id"
+          },
+          "field_key": {
+            "type": "string",
+            "title": "Field Key"
+          },
+          "field_label": {
+            "type": "string",
+            "title": "Field Label"
+          },
+          "field_type": {
+            "type": "string",
+            "title": "Field Type"
+          },
+          "value": {
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "field_id",
+          "field_key",
+          "field_label",
+          "field_type",
+          "value"
+        ],
+        "title": "ResponseDetailOut"
+      },
+      "ResponseHistoryEntry": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          },
+          "user_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Name"
+          },
+          "old_values": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Old Values"
+          },
+          "new_values": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "New Values"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "action",
+          "description",
+          "user_id",
+          "user_name",
+          "old_values",
+          "new_values",
+          "created_at"
+        ],
+        "title": "ResponseHistoryEntry"
+      },
+      "ResponseOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "form_id": {
+            "type": "integer",
+            "title": "Form Id"
+          },
+          "form_title": {
+            "type": "string",
+            "title": "Form Title"
+          },
+          "submitted_by": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submitted By"
+          },
+          "submitter_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submitter Name"
+          },
+          "submitter_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submitter Email"
+          },
+          "updated_by": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated By"
+          },
+          "updated_by_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated By Name"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "ip_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ip Address"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "answers": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Answers"
+          },
+          "details": {
+            "items": {
+              "$ref": "#/components/schemas/ResponseDetailOut"
+            },
+            "type": "array",
+            "title": "Details"
+          },
+          "can_edit": {
+            "type": "boolean",
+            "title": "Can Edit"
+          },
+          "can_delete": {
+            "type": "boolean",
+            "title": "Can Delete"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "form_id",
+          "form_title",
+          "submitted_by",
+          "submitter_name",
+          "submitter_email",
+          "updated_by",
+          "updated_by_name",
+          "version",
+          "ip_address",
+          "created_at",
+          "updated_at",
+          "answers",
+          "details",
+          "can_edit",
+          "can_delete"
+        ],
+        "title": "ResponseOut"
+      },
+      "ResponseUpdate": {
+        "properties": {
+          "answers": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Answers",
+            "description": "Map of field_key -> value",
+            "examples": [
+              {
+                "email": "asha@example.com",
+                "full_name": "Asha",
+                "rating": 5,
+                "skills": [
+                  "python",
+                  "sql"
+                ]
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "answers"
+        ],
+        "title": "ResponseUpdate"
+      },
+      "RoleName": {
+        "type": "string",
+        "enum": [
+          "Admin",
+          "User"
+        ],
+        "title": "RoleName"
+      },
+      "RoleOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "RoleOut"
+      },
+      "SubmissionRequest": {
+        "properties": {
+          "answers": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Answers",
+            "description": "Map of field_key -> value",
+            "examples": [
+              {
+                "email": "asha@example.com",
+                "full_name": "Asha",
+                "rating": 5,
+                "skills": [
+                  "python",
+                  "sql"
+                ]
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "answers"
+        ],
+        "title": "SubmissionRequest"
+      },
+      "SubmissionResult": {
+        "properties": {
+          "response_id": {
+            "type": "integer",
+            "title": "Response Id"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "response_id",
+          "message"
+        ],
+        "title": "SubmissionResult"
+      },
+      "TokenResponse": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "refresh_token": {
+            "type": "string",
+            "title": "Refresh Token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type",
+            "default": "bearer"
+          },
+          "expires_in": {
+            "type": "integer",
+            "title": "Expires In"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token",
+          "refresh_token",
+          "expires_in",
+          "user"
+        ],
+        "title": "TokenResponse"
+      },
+      "TopForm": {
+        "properties": {
+          "form_id": {
+            "type": "integer",
+            "title": "Form Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "response_count": {
+            "type": "integer",
+            "title": "Response Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "form_id",
+          "title",
+          "is_active",
+          "response_count"
+        ],
+        "title": "TopForm"
+      },
+      "TrendPoint": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "title": "Date"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date",
+          "count"
+        ],
+        "title": "TrendPoint"
+      },
+      "UserOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "full_name": {
+            "type": "string",
+            "title": "Full Name"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "last_login_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Login At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "full_name",
+          "email",
+          "is_active",
+          "created_at"
+        ],
+        "title": "UserOut"
+      },
+      "UserProfileUpdate": {
+        "properties": {
+          "full_name": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 2,
+            "title": "Full Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "full_name"
+        ],
+        "title": "UserProfileUpdate"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "VisibilityRules": {
+        "properties": {
+          "logic": {
+            "type": "string",
+            "enum": [
+              "all",
+              "any"
+            ],
+            "title": "Logic",
+            "default": "all"
+          },
+          "conditions": {
+            "items": {
+              "$ref": "#/components/schemas/Condition"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Conditions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "conditions"
+        ],
+        "title": "VisibilityRules"
+      }
+    },
+    "securitySchemes": {
+      "OAuth2PasswordBearer": {
+        "type": "oauth2",
+        "flows": {
+          "password": {
+            "scopes": {},
+            "tokenUrl": "/api/v1/auth/login"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "Register, login (JWT), refresh, profile"
+    },
+    {
+      "name": "Users (Admin)",
+      "description": "Role-based user management - **Admin only**"
+    },
+    {
+      "name": "Forms",
+      "description": "Form CRUD, enable/disable, duplicate, field builder & ordering"
+    },
+    {
+      "name": "Form Submission (Public & Authenticated)",
+      "description": "Render & submit forms, file uploads"
+    },
+    {
+      "name": "Responses",
+      "description": "Search/filter, view, edit (permission based), history, delete"
+    },
+    {
+      "name": "Dashboard & Analytics",
+      "description": "Dashboard KPIs and form-wise analytics"
+    },
+    {
+      "name": "Exports (Excel / PDF)",
+      "description": "Async (Celery) and synchronous exports"
+    },
+    {
+      "name": "Activity Logs",
+      "description": "Audit trail"
+    }
+  ]
+}

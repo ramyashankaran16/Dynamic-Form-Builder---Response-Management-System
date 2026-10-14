@@ -1,0 +1,2200 @@
+{
+  "info": {
+    "_postman_id": "f16f4e19-53e9-4411-ba7c-83d7052164ec",
+    "name": "Dynamic Form Builder API",
+    "description": "Run **Authentication > Login (Admin)** or **Login (User)** first - the token is stored automatically.\nThen run requests top-to-bottom: IDs (formId, formSlug, responseId, taskId, filePath) are captured by test scripts.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000/api/v1"
+    },
+    {
+      "key": "adminEmail",
+      "value": "admin@formbuilder.com"
+    },
+    {
+      "key": "adminPassword",
+      "value": "Admin@123"
+    },
+    {
+      "key": "userEmail",
+      "value": "user@formbuilder.com"
+    },
+    {
+      "key": "userPassword",
+      "value": "Password@123"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "formId",
+      "value": ""
+    },
+    {
+      "key": "formSlug",
+      "value": ""
+    },
+    {
+      "key": "fieldId",
+      "value": ""
+    },
+    {
+      "key": "responseId",
+      "value": ""
+    },
+    {
+      "key": "detailId",
+      "value": ""
+    },
+    {
+      "key": "taskId",
+      "value": ""
+    },
+    {
+      "key": "filePath",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Self-registration (role = User). Returns 409 if the email exists.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Demo User\",\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{userPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));",
+                  "if (pm.response.code < 300) {",
+                  "  const j = pm.response.json();",
+                  "  pm.collectionVariables.set('userId', j.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "OAuth2 password form: username = email.",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "{{adminEmail}}"
+                },
+                {
+                  "key": "password",
+                  "value": "{{adminPassword}}"
+                }
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));",
+                  "if (pm.response.code < 300) {",
+                  "  const j = pm.response.json();",
+                  "  pm.collectionVariables.set('accessToken', j.access_token);",
+                  "  pm.collectionVariables.set('refreshToken', j.refresh_token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login (User)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "{{userEmail}}"
+                },
+                {
+                  "key": "password",
+                  "value": "{{userPassword}}"
+                }
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));",
+                  "if (pm.response.code < 300) {",
+                  "  const j = pm.response.json();",
+                  "  pm.collectionVariables.set('accessToken', j.access_token);",
+                  "  pm.collectionVariables.set('refreshToken', j.refresh_token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));",
+                  "if (pm.response.code < 300) {",
+                  "  const j = pm.response.json();",
+                  "  pm.collectionVariables.set('accessToken', j.access_token);",
+                  "  pm.collectionVariables.set('refreshToken', j.refresh_token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Demo User Updated\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me/change-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me",
+                "change-password"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_password\": \"{{userPassword}}\",\n  \"new_password\": \"{{userPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Users (Admin)",
+      "description": "Login as Admin first.",
+      "item": [
+        {
+          "name": "List Roles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/roles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "roles"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users?page=1&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                },
+                {
+                  "key": "search",
+                  "value": "demo",
+                  "disabled": true
+                },
+                {
+                  "key": "role",
+                  "value": "User",
+                  "disabled": true
+                },
+                {
+                  "key": "is_active",
+                  "value": "true",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update User (role / status)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"User\",\n  \"is_active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            },
+            "description": "Deletes the user and their forms. Prefer is_active=false."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Forms",
+      "item": [
+        {
+          "name": "Create Form (with fields)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/forms",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "forms"
+              ]
+            },
+            "description": "Creates a form with all 9 field types and a conditional field.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Job Application\",\n  \"description\": \"Apply for an open role at our company\",\n  \"is_public\": true,\n  \"is_active\": true,\n  \"allow_response_edit\": true,\n  \"allow_multiple_submissions\": true,\n  \"submit_message\": \"Thanks for applying! We'll be in touch.\",\n  \"fields\": [\n    {\n      \"label\": \"Full Name\",\n      \"field_key\": \"full_name\",\n      \"field_type\": \"text\",\n      \"is_required\": true,\n      \"placeholder\": \"Jane Doe\",\n      \"config\": {\n        \"min_length\": 2,\n        \"max_length\": 100\n      }\n    },\n    {\n      \"label\": \"Email\",\n      \"field_key\": \"email\",\n      \"field_type\": \"email\",\n      \"is_required\": true\n    },\n    {\n      \"label\": \"Years of experience\",\n      \"field_key\": \"experience\",\n      \"field_type\": \"number\",\n      \"config\": {\n        \"min\": 0,\n        \"max\": 50,\n        \"integer_only\": true\n      }\n    },\n    {\n      \"label\": \"Currently employed?\",\n      \"field_key\": \"employed\",\n      \"field_type\": \"radio\",\n      \"is_required\": true,\n      \"options\": [\n        {\n          \"label\": \"Yes\",\n          \"value\": \"yes\"\n        },\n        {\n          \"label\": \"No\",\n          \"value\": \"no\"\n        }\n      ]\n    },\n    {\n      \"label\": \"Current company\",\n      \"field_key\": \"company\",\n      \"field_type\": \"text\",\n      \"is_required\": true,\n      \"help_text\": \"Shown only when 'Currently employed?' = Yes\",\n      \"visibility_rules\": {\n        \"logic\": \"all\",\n        \"conditions\": [\n          {\n            \"field_key\": \"employed\",\n            \"operator\": \"equals\",\n            \"value\": \"yes\"\n          }\n        ]\n      }\n    },\n    {\n      \"label\": \"Department\",\n      \"field_key\": \"department\",\n      \"field_type\": \"dropdown\",\n      \"is_required\": true,\n      \"options\": [\n        {\n          \"label\": \"Engineering\",\n          \"value\": \"engineering\"\n        },\n        {\n          \"label\": \"Sales\",\n          \"value\": \"sales\"\n        },\n        {\n          \"label\": \"Marketing\",\n          \"value\": \"marketing\"\n        }\n      ]\n    },\n    {\n      \"label\": \"Skills\",\n      \"field_key\": \"skills\",\n      \"field_type\": \"checkbox\",\n      \"config\": {\n        \"min_selected\": 1,\n        \"max_selected\": 3\n      },\n      \"options\": [\n        {\n          \"label\": \"Python\"\n        },\n        {\n          \"label\": \"SQL\"\n        },\n        {\n          \"label\": \"React\"\n        },\n        {\n          \"label\": \"Docker\"\n        }\n      ]\n    },\n    {\n      \"label\": \"Available from\",\n      \"field_key\": \"start_date\",\n      \"field_type\": \"date\",\n      \"config\": {\n        \"min_date\": \"2026-01-01\"\n      }\n    },\n    {\n      \"label\": \"Resume\",\n      \"field_key\": \"resume\",\n      \"field_type\": \"file\",\n      \"config\": {\n        \"allowed_extensions\": [\n          \"pdf\",\n          \"doc\",\n          \"docx\"\n        ],\n        \"max_size_mb\": 5\n      }\n    },\n    {\n      \"label\": \"Rate our hiring process\",\n      \"field_key\": \"rating\",\n      \"field_type\": \"rating\",\n      \"config\": {\n        \"max_rating\": 5\n      }\n    },\n    {\n      \"label\": \"I agree to the privacy policy\",\n      \"field_key\": \"agree\",\n      \"field_type\": \"checkbox\",\n      \"is_required\": true\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));",
+                  "if (pm.response.code < 300) {",
+                  "  const j = pm.response.json();",
+                  "  pm.collectionVariables.set('formId', j.id);",
+                  "  pm.collectionVariables.set('formSlug', j.slug);",
+                  "  pm.collectionVariables.set('fieldId', j.fields[j.fields.length-1].id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Forms",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/forms?page=1&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "forms"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                },
+                {
+                  "key": "search",
+                  "value": "job",
+                  "disabled": true
+                },
+                {
+                  "key": "is_active",
+                  "value": "true",
+                  "disabled": true
+                },
+                {
+                  "key": "is_public",
+                  "value": "true",
+                  "disabled": true
+                },
+                {
+                  "key": "mine",
+                  "value": "true",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Form",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/forms/{{formId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "forms",
+                "{{formId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Form Settings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/forms/{{formId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "forms",
+                "{{formId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated description\",\n  \"allow_response_edit\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Disable Form",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/forms/{{formId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "forms",
+                "{{formId}}",
+                "status"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_active\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Enable Form",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/forms/{{formId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "forms",
+                "{{formId}}",
+                "status"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Duplicate Form",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/forms/{{formId}}/duplicate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "forms",
+                "{{formId}}",
+                "duplicate"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Form Activity",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/forms/{{formId}}/activity",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "forms",
+                "{{formId}}",
+                "activity"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Form Builder (Fields)",
+      "item": [
+        {
+          "name": "Add Field",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/forms/{{formId}}/fields",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "forms",
+                "{{formId}}",
+                "fields"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"label\": \"LinkedIn profile\",\n  \"field_key\": \"linkedin\",\n  \"field_type\": \"text\",\n  \"placeholder\": \"https://linkedin.com/in/...\",\n  \"order_index\": 2,\n  \"config\": {\n    \"pattern\": \"^https://(www\\\\.)?linkedin\\\\.com/.*$\",\n    \"pattern_message\": \"Enter a LinkedIn URL\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));",
+                  "if (pm.response.code < 300) {",
+                  "  const j = pm.response.json();",
+                  "  pm.collectionVariables.set('fieldId', j.fields.find(f => f.field_key === 'linkedin').id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Field",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/forms/{{formId}}/fields/{{fieldId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "forms",
+                "{{formId}}",
+                "fields",
+                "{{fieldId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"label\": \"LinkedIn URL\",\n  \"is_required\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reorder Fields",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/forms/{{formId}}/fields/reorder",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "forms",
+                "{{formId}}",
+                "fields",
+                "reorder"
+              ]
+            },
+            "description": "Must contain ALL field ids of the form. Get them from 'Get Form'.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"field_ids\": [\n    1,\n    2,\n    3\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bulk Save Fields (builder save)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/forms/{{formId}}/fields",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "forms",
+                "{{formId}}",
+                "fields"
+              ]
+            },
+            "description": "Replaces the complete field list - items with id are updated, without id created, missing ones deleted. Use on a scratch form!",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": [\n    {\n      \"id\": null,\n      \"label\": \"Name\",\n      \"field_key\": \"name\",\n      \"field_type\": \"text\",\n      \"is_required\": true\n    },\n    {\n      \"label\": \"Satisfaction\",\n      \"field_key\": \"satisfaction\",\n      \"field_type\": \"rating\",\n      \"config\": {\n        \"max_rating\": 10\n      }\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Field",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/forms/{{formId}}/fields/{{fieldId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "forms",
+                "{{formId}}",
+                "fields",
+                "{{fieldId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. Submission (Public & Authenticated)",
+      "item": [
+        {
+          "name": "Get Public Form",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/public/forms/{{formSlug}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "public",
+                "forms",
+                "{{formSlug}}"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Upload File",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/public/forms/{{formSlug}}/upload?field_key=resume",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "public",
+                "forms",
+                "{{formSlug}}",
+                "upload"
+              ],
+              "query": [
+                {
+                  "key": "field_key",
+                  "value": "resume"
+                }
+              ]
+            },
+            "description": "Select a PDF in the 'file' form-data field. Use the returned file_path as the answer.",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));",
+                  "if (pm.response.code < 300) {",
+                  "  const j = pm.response.json();",
+                  "  pm.collectionVariables.set('filePath', j.file_path);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Submit (Anonymous)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/public/forms/{{formSlug}}/submit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "public",
+                "forms",
+                "{{formSlug}}",
+                "submit"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answers\": {\n    \"full_name\": \"Anonymous Applicant\",\n    \"email\": \"asha@example.com\",\n    \"experience\": 4,\n    \"employed\": \"no\",\n    \"company\": \"Acme Corp\",\n    \"department\": \"engineering\",\n    \"skills\": [\n      \"Python\",\n      \"SQL\"\n    ],\n    \"start_date\": \"2026-11-01\",\n    \"rating\": 5,\n    \"agree\": true,\n    \"resume\": \"{{filePath}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));",
+                  "if (pm.response.code < 300) {",
+                  "  const j = pm.response.json();",
+                  "  pm.collectionVariables.set('responseId', j.response_id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Submit (Authenticated)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/public/forms/{{formSlug}}/submit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "public",
+                "forms",
+                "{{formSlug}}",
+                "submit"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answers\": {\n    \"full_name\": \"Asha Kumar\",\n    \"email\": \"asha@example.com\",\n    \"experience\": 4,\n    \"employed\": \"yes\",\n    \"company\": \"Acme Corp\",\n    \"department\": \"engineering\",\n    \"skills\": [\n      \"Python\",\n      \"SQL\"\n    ],\n    \"start_date\": \"2026-11-01\",\n    \"rating\": 5,\n    \"agree\": true\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));",
+                  "if (pm.response.code < 300) {",
+                  "  const j = pm.response.json();",
+                  "  pm.collectionVariables.set('responseId', j.response_id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Submit (Validation Errors)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/public/forms/{{formSlug}}/submit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "public",
+                "forms",
+                "{{formSlug}}",
+                "submit"
+              ]
+            },
+            "description": "Expect 422 with errors per field.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answers\": {\n    \"full_name\": \"A\",\n    \"email\": \"not-an-email\",\n    \"employed\": \"yes\",\n    \"rating\": 9\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns 422 with field errors', () => { pm.expect(pm.response.code).to.eql(422); pm.expect(pm.response.json().errors).to.be.an('object'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6. Responses",
+      "item": [
+        {
+          "name": "List Responses (search & filters)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/forms/{{formId}}/responses?page=1&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "forms",
+                "{{formId}}",
+                "responses"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                },
+                {
+                  "key": "search",
+                  "value": "acme",
+                  "disabled": true
+                },
+                {
+                  "key": "date_from",
+                  "value": "2026-01-01",
+                  "disabled": true
+                },
+                {
+                  "key": "date_to",
+                  "value": "2026-12-31",
+                  "disabled": true
+                },
+                {
+                  "key": "submitter_type",
+                  "value": "all",
+                  "disabled": true
+                },
+                {
+                  "key": "field_key",
+                  "value": "department",
+                  "disabled": true
+                },
+                {
+                  "key": "field_value",
+                  "value": "engineering",
+                  "disabled": true
+                },
+                {
+                  "key": "sort_by",
+                  "value": "created_at",
+                  "disabled": true
+                },
+                {
+                  "key": "sort_order",
+                  "value": "desc",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Enable query params to search / filter."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));",
+                  "if (pm.response.code < 300) {",
+                  "  const j = pm.response.json();",
+                  "  pm.collectionVariables.set('responseId', j.items.length ? j.items[0].id : '');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "My Submissions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/responses/mine",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "responses",
+                "mine"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Response",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/responses/{{responseId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "responses",
+                "{{responseId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));",
+                  "if (pm.response.code < 300) {",
+                  "  const j = pm.response.json();",
+                  "  pm.collectionVariables.set('detailId', (j.details.find(d => d.field_type === 'file') || {}).id || '');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Edit Response",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/responses/{{responseId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "responses",
+                "{{responseId}}"
+              ]
+            },
+            "description": "Send the complete answer set. Owner/Admin always; submitter only if allow_response_edit and form active.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answers\": {\n    \"full_name\": \"Asha Kumar\",\n    \"email\": \"asha@example.com\",\n    \"experience\": 4,\n    \"employed\": \"yes\",\n    \"company\": \"Globex\",\n    \"department\": \"engineering\",\n    \"skills\": [\n      \"Python\",\n      \"SQL\"\n    ],\n    \"start_date\": \"2026-11-01\",\n    \"rating\": 4,\n    \"agree\": true\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Response History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/responses/{{responseId}}/history",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "responses",
+                "{{responseId}}",
+                "history"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Download Uploaded File",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/responses/{{responseId}}/files/{{detailId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "responses",
+                "{{responseId}}",
+                "files",
+                "{{detailId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Response",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/responses/{{responseId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "responses",
+                "{{responseId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "7. Analytics",
+      "item": [
+        {
+          "name": "Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analytics/dashboard?days=30",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analytics",
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "days",
+                  "value": "30"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Form Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analytics/forms/{{formId}}?days=30",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analytics",
+                "forms",
+                "{{formId}}"
+              ],
+              "query": [
+                {
+                  "key": "days",
+                  "value": "30"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "8. Exports",
+      "item": [
+        {
+          "name": "Request Excel Export (Celery)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/exports/forms/{{formId}}?format=excel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "exports",
+                "forms",
+                "{{formId}}"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "excel"
+                },
+                {
+                  "key": "search",
+                  "value": "acme",
+                  "disabled": true
+                },
+                {
+                  "key": "date_from",
+                  "value": "2026-01-01",
+                  "disabled": true
+                },
+                {
+                  "key": "date_to",
+                  "value": "2026-12-31",
+                  "disabled": true
+                },
+                {
+                  "key": "submitter_type",
+                  "value": "all",
+                  "disabled": true
+                },
+                {
+                  "key": "field_key",
+                  "value": "department",
+                  "disabled": true
+                },
+                {
+                  "key": "field_value",
+                  "value": "engineering",
+                  "disabled": true
+                },
+                {
+                  "key": "sort_by",
+                  "value": "created_at",
+                  "disabled": true
+                },
+                {
+                  "key": "sort_order",
+                  "value": "desc",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));",
+                  "if (pm.response.code < 300) {",
+                  "  const j = pm.response.json();",
+                  "  pm.collectionVariables.set('taskId', j.task_id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Request PDF Export (Celery)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/exports/forms/{{formId}}?format=pdf",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "exports",
+                "forms",
+                "{{formId}}"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "pdf"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));",
+                  "if (pm.response.code < 300) {",
+                  "  const j = pm.response.json();",
+                  "  pm.collectionVariables.set('taskId', j.task_id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Export Task Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/exports/tasks/{{taskId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "exports",
+                "tasks",
+                "{{taskId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Download Export (task)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/exports/tasks/{{taskId}}/download",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "exports",
+                "tasks",
+                "{{taskId}}",
+                "download"
+              ]
+            },
+            "description": "Use 'Send and Download'."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Download Excel Now (sync)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/exports/forms/{{formId}}/download?format=excel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "exports",
+                "forms",
+                "{{formId}}",
+                "download"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "excel"
+                },
+                {
+                  "key": "search",
+                  "value": "acme",
+                  "disabled": true
+                },
+                {
+                  "key": "date_from",
+                  "value": "2026-01-01",
+                  "disabled": true
+                },
+                {
+                  "key": "date_to",
+                  "value": "2026-12-31",
+                  "disabled": true
+                },
+                {
+                  "key": "submitter_type",
+                  "value": "all",
+                  "disabled": true
+                },
+                {
+                  "key": "field_key",
+                  "value": "department",
+                  "disabled": true
+                },
+                {
+                  "key": "field_value",
+                  "value": "engineering",
+                  "disabled": true
+                },
+                {
+                  "key": "sort_by",
+                  "value": "created_at",
+                  "disabled": true
+                },
+                {
+                  "key": "sort_order",
+                  "value": "desc",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Use 'Send and Download'."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Download PDF Now (sync)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/exports/forms/{{formId}}/download?format=pdf",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "exports",
+                "forms",
+                "{{formId}}",
+                "download"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "pdf"
+                }
+              ]
+            },
+            "description": "Use 'Send and Download'."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "9. Activity Logs",
+      "item": [
+        {
+          "name": "List Activity Logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/activity-logs?page=1&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "activity-logs"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                },
+                {
+                  "key": "action",
+                  "value": "FORM_CREATED",
+                  "disabled": true
+                },
+                {
+                  "key": "entity_type",
+                  "value": "form",
+                  "disabled": true
+                },
+                {
+                  "key": "user_id",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "date_from",
+                  "value": "2026-01-01",
+                  "disabled": true
+                },
+                {
+                  "key": "date_to",
+                  "value": "2026-12-31",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Action Codes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/activity-logs/actions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "activity-logs",
+                "actions"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "http://localhost:8000/health",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "health"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

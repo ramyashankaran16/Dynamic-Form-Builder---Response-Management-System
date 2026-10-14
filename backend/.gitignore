@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.pytest_cache/
+.coverage
+htmlcov/
+storage/uploads/*
+storage/exports/*
+!storage/uploads/.gitkeep
+!storage/exports/.gitkeep
+*.db
+celerybeat-schedule*
+.idea/
+.vscode/
